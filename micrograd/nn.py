@@ -9,18 +9,21 @@ class Module:
         return []
 
 class Neuron(Module):
-    def __init__(self, nin):
+    def __init__(self, nin, nonlin = True):
         self.w = [(Value(random.uniform(-1,1))) for i in range(nin)]
         self.b = Value(random.uniform(-1,1))
+        self.nonlin = nonlin
     def __call__(self,x):
-        return sum(((wi * xi) for wi,xi in zip(self.w, x)), self.b).relu()
+        out = sum(((wi * xi) for wi,xi in zip(self.w, x)), self.b)
+        return out.relu() if self.nonlin else out
     def parameters(self):
         return self.w + [self.b]
 class Layer(Module):
     def __init__(self, nin, nout):
         self.neurons = [(Neuron(nin)) for _ in range(nout)]
     def __call__(self, x):
-        return [n(x) for n in self.neurons]
+        out =  [n(x) for n in self.neurons]
+        return out[0] if len(out) == 1 else out
     def parameters(self):
         return [p for n in self.neurons for p in n.parameters()]
 class MLP(Module):
